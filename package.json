@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -11,7 +12,12 @@
   ],
   "author": "@lcomino",
   "license": "ISC",
-  "devDependencies": {
+  "devDependencies": {},
+  "dependencies": {
+    "mongoose": "^4.13.9",
+    "nodemailer": "^4.4.1",
+    "passport": "^0.4.0",
+    "passport-restify": "^1.0.1",
     "restify": "^6.3.4"
   }
 }
