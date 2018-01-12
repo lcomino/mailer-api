@@ -6,6 +6,7 @@ const restify = require('restify')
 const nodemailer = require('nodemailer')
 const mongoose = require('./config/db')
 const Account = require('./model/Account')(mongoose)
+const crypto = require('crypto')
 
 
 /*
@@ -17,19 +18,32 @@ const respond = ( req, res, next ) => {
     next()
 }
 
+const generacreCrypto = ( stringToCrypto ) => {
+    let secret = stringToCrypto || '';
+    let hash = crypto.createHash('sha256')
+    hash.update(stringToCrypto)
+    return hash.digest('hex')
+}
+
 const createAccount = ( req, res, next ) => {
-    let account = new Account({
-        name : 'Lucas Comino',
-        email : 'lcomino3d@gmail.com',
-        password : 'F7cpv6vr',
+    
+    let smtp_config = JSON.parse(req.params.smtp_config)
+
+    let accountObj = {
+        name : req.params.name,
+        email : req.params.email,
+        password : generacreCrypto(req.params.password),
         active : true,
+        token_api : generacreCrypto(smtp_config.host + smtp_config.port + smtp_config.user + smtp_config.pass),
         smtp_config : {
-            host: 'smtp.gmail.com',
-            port: 587,            
-            user: 'lcomino3d@gmail.com',
-            pass: 'F7cpv6vr'            
+            host: smtp_config.host,
+            port: smtp_config.port,            
+            user: smtp_config.user,
+            pass: smtp_config.pass
         }
-    })
+    }
+
+    let account = new Account(accountObj)
     
     account.save( ( err ) => {
         if(err)
@@ -62,7 +76,14 @@ const sendMail = ( req, res, next ) => {
             next()
         }
 
+        let from = JSON.parse(req.params.from);
+
         let account = doc;
+
+        if(!doc){
+            res.json({error: 'Usuário não encontrado.'})
+            return next()
+        }
 
         const transporter = nodemailer.createTransport({
             host: account.smtp_config.host,
@@ -72,9 +93,9 @@ const sendMail = ( req, res, next ) => {
                 pass: account.smtp_config.pass
             }
         });
-        
+
         const mailOptions = {
-            from : '"'+req.params.from.name+'" <'+req.params.from.email+'>',
+            from : '"'+from.name+'" <'+from.email+'>',
             to : req.params.to,
             subject : req.params.subject,
             text : req.params.text,
