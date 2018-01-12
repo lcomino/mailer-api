@@ -123,6 +123,6 @@ server.head('/mail', respond)
 server.put('/account', createAccount)
 server.get('/account', getAccount)
 
-server.listen(process.env.PORT_API_MAILER || 8080, () => {
+server.listen(process.env.PORT_API_MAILER || 3000, () => {
     console.log('%s na porta %s', server.name, server.url)
 })
